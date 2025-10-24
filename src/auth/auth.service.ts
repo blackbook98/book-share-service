@@ -11,7 +11,7 @@ export class AuthService {
   ) {}
 
   async validateUser(username: string, pass: string): Promise<any> {
-    const user = await this.usersService.findOne(username);
+    const user = await this.usersService.findUser(username);
     if (user && (await bcrypt.compare(pass, user.password))) {
       const { password, ...result } = user;
       return result;
@@ -23,11 +23,33 @@ export class AuthService {
     try {
       let validation = await this.validateUser(user.username, user.password);
       if (validation) {
-        const payload = { username: user.username, sub: user.id };
+        const payload = { username: validation.username, sub: validation.id };
         let access_token = this.jwtService.sign(payload);
         return {
           access_token: access_token,
         };
+      } else {
+        throw new UnauthorizedException('Login failed');
+      }
+    } catch (error) {
+      throw new UnauthorizedException('Login failed');
+    }
+  }
+
+  async register(user: any) {
+    try {
+      let validation = await this.usersService.createUser(
+        user.username,
+        user.password,
+      );
+      if (validation) {
+        const payload = { username: validation.username, sub: validation.id };
+        let access_token = this.jwtService.sign(payload);
+        return {
+          access_token: access_token,
+        };
+      } else {
+        throw new UnauthorizedException('Registration failed');
       }
     } catch (error) {
       throw new UnauthorizedException('Login failed');

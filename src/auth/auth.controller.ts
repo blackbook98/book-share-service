@@ -10,4 +10,10 @@ export class AuthController {
     let { user } = req.body;
     return this.authService.login(user);
   }
+
+  @Post('register')
+  async register(@Request() req) {
+    let { user } = req.body;
+    return this.authService.register(user);
+  }
 }
