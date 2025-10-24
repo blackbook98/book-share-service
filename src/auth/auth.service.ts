@@ -20,9 +20,17 @@ export class AuthService {
   }
 
   async login(user: any) {
-    const payload = { username: user.username, sub: user.id };
-    return {
-      access_token: this.jwtService.sign(payload),
-    };
+    try {
+      let validation = await this.validateUser(user.username, user.password);
+      if (validation) {
+        const payload = { username: user.username, sub: user.id };
+        let access_token = this.jwtService.sign(payload);
+        return {
+          access_token: access_token,
+        };
+      }
+    } catch (error) {
+      throw new UnauthorizedException('Login failed');
+    }
   }
 }
