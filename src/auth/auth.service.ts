@@ -32,6 +32,7 @@ export class AuthService {
         throw new UnauthorizedException('Login failed');
       }
     } catch (error) {
+      console.log('Error in logging in', error);
       throw new UnauthorizedException('Login failed');
     }
   }
@@ -52,6 +53,7 @@ export class AuthService {
         throw new UnauthorizedException('Registration failed');
       }
     } catch (error) {
+      console.log('Error in registering user', error);
       throw new UnauthorizedException('Login failed');
     }
   }
