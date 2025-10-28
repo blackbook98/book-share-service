@@ -11,30 +11,36 @@ export class UserService {
     private readonly userRepository: Repository<User>,
   ) {}
 
-  async findUser(username: string): Promise<any> {
+  async findUser(data: Partial<User>): Promise<any> {
     try {
-      const user = {
-        id: 1,
-        username: username,
-        password:
-          '$2b$10$LQuAHtEUVWxB7F2yISgV4O3Wg7JKH52rxftDurRQuhRFqp3Q0r4B.',
-      }; // Mocked user, TODO: replace with real DB call
-      return user;
+      let userdata = await this.userRepository.findOne({
+        where: { username: data.username },
+      });
+
+      if (userdata) {
+        return userdata;
+      } else {
+        return null;
+      }
     } catch (error) {
+      console.log('Error in finding user', error);
       return null;
     }
   }
 
-  async createUser(username: string, pass: string): Promise<any> {
+  async createUser(data: Partial<User>): Promise<any> {
     try {
+      let { password: pass } = data;
       let encrypted_password = await bcrypt.hash(pass, 10);
-      const user = {
-        id: 1,
-        username: username,
+
+      //TODO: Add BE Validations
+      let userdata = this.userRepository.create({
+        ...data,
         password: encrypted_password,
-      }; // Mocked user, TODO: replace with real DB call
-      return user;
+      });
+      return await this.userRepository.save(userdata);
     } catch (error) {
+      console.error('Error in creating user', error);
       return null;
     }
   }

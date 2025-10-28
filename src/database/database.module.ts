@@ -14,13 +14,13 @@ import { User } from './models/user.entity';
         username: configService.get<string>('DB_USERNAME'),
         password: configService.get<string>('DB_PASSWORD'),
         database: configService.get<string>('DB_NAME'),
-        entities: [User],
+        entities: [User], //TODO: import all entities
         synchronize:
           configService.get<string>('NODE_ENV') === 'production' ? false : true,
       }),
       inject: [ConfigService],
     }),
-    TypeOrmModule.forFeature([User]),
+    TypeOrmModule.forFeature([User]), //TODO: import all entities
   ],
   exports: [TypeOrmModule],
 })
