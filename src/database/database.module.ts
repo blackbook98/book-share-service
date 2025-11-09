@@ -7,7 +7,8 @@ import { User } from './models/user.entity';
   imports: [
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: (configService: ConfigService) => ({
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService) => ({
         type: 'postgres',
         host: configService.get<string>('DB_HOST'),
         port: 5432,
@@ -18,7 +19,6 @@ import { User } from './models/user.entity';
         synchronize:
           configService.get<string>('NODE_ENV') === 'production' ? false : true,
       }),
-      inject: [ConfigService],
     }),
     TypeOrmModule.forFeature([User]), //TODO: import all entities
   ],

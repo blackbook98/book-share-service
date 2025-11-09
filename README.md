@@ -29,7 +29,7 @@ $ pnpm run start:dev
 
 # development with docker
 $ docker build -t book-share-service .
-$ docker run --env-file .env -d -p 3000:3000 --name nestjs-container book-share-service
+$ docker run --env-file .env -d -p 3000:3000 --name book-share-service-container book-share-service
 
 # production mode
 $ pnpm run start:prod
