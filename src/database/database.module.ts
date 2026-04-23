@@ -4,6 +4,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './models/user.entity';
 import { List } from './models/lists.entity';
 
+const entities = [User, List];
+
 @Module({
   imports: [
     TypeOrmModule.forRootAsync({
@@ -16,12 +18,11 @@ import { List } from './models/lists.entity';
         username: configService.get<string>('DB_USERNAME'),
         password: configService.get<string>('DB_PASSWORD'),
         database: configService.get<string>('DB_NAME'),
-        entities: [User, List], //TODO: import all entities
-        synchronize:
-          configService.get<string>('NODE_ENV') === 'production' ? false : true,
+        entities,
+        synchronize: configService.get<string>('NODE_ENV') !== 'production',
       }),
     }),
-    TypeOrmModule.forFeature([User, List]), //TODO: import all entities
+    TypeOrmModule.forFeature(entities),
   ],
   exports: [TypeOrmModule],
 })

@@ -1,9 +1,18 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 
 @Entity('lists')
 export class List {
   @PrimaryGeneratedColumn('uuid')
   id: string;
+
+  @Column('uuid')
+  user_id: string;
 
   @Column()
   name: string;
@@ -19,4 +28,10 @@ export class List {
 
   @Column()
   list: string;
+
+  @CreateDateColumn({ name: 'created_at' })
+  createdAt: Date;
+
+  @UpdateDateColumn({ name: 'updated_at' })
+  updatedAt: Date;
 }
