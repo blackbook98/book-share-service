@@ -144,10 +144,23 @@ export class UserService {
 
   async getReviewsByBook(bookId: string): Promise<any> {
     try {
-      return await this.reviewRepository.find({
-        where: { bookId },
+      const book = await this.bookRepository.findOne({
+        where: { book_id: bookId },
+      });
+
+      if (!book) return [];
+
+      const reviews = await this.reviewRepository.find({
+        where: { bookId: book.id },
         relations: ['user'],
       });
+
+      return reviews.map((review) => ({
+        userId: review.userId,
+        username: review.user.username,
+        rating: review.rating,
+        content: review.content,
+      }));
     } catch (error) {
       console.error('Error in fetching reviews', error);
       return 'error';

@@ -6,6 +6,7 @@ import {
   Delete,
   Body,
   Query,
+  Param,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { UserService } from './user.service';
@@ -39,8 +40,8 @@ export class UserController {
   }
 
   @UseGuards(AuthGuard('jwt'))
-  @Get('reviews/book')
-  async getReviewsByBook(@Query('bookId') bookId: string) {
+  @Get('reviews/:bookId')
+  async getReviewsByBook(@Param('bookId') bookId: string) {
     return this.userService.getReviewsByBook(bookId);
   }
 
