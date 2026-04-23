@@ -27,6 +27,7 @@ export class AuthService {
         let access_token = this.jwtService.sign(payload);
         return {
           access_token: access_token,
+          user_id: validation.id,
         };
       } else {
         throw new UnauthorizedException('Login failed');

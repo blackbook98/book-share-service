@@ -56,6 +56,7 @@ export class UserService {
         volume_info: data?.book?.volumeInfo,
         description: data?.book?.volumeInfo?.description,
         list: data?.listName,
+        user_id: data?.user_id,
       };
       return await this.listRepository.upsert(list, ['book_id']);
     } catch (error) {
