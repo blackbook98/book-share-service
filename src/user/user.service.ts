@@ -96,6 +96,24 @@ export class UserService {
     }
   }
 
+  async deleteList(id: string, user_id: string): Promise<any> {
+    try {
+      const book = await this.bookRepository.findOne({
+        where: { book_id: id },
+      });
+
+      console.log('book', book);
+      console.log('user_id', user_id);
+
+      if (!book) return 'error';
+
+      return await this.listRepository.delete({ book_id: book.id, user_id });
+    } catch (error) {
+      console.error('Error in deleting list', error);
+      return 'error';
+    }
+  }
+
   async saveReview(data: {
     userId: string;
     bookId: string;
