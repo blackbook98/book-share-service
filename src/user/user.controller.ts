@@ -17,4 +17,22 @@ export class UserController {
   async getLists(@Query('userId') userId: string) {
     return this.userService.getLists(userId);
   }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('reviews')
+  async saveReview(@Body() body: any) {
+    return this.userService.saveReview(body);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get('reviews/book')
+  async getReviewsByBook(@Query('bookId') bookId: string) {
+    return this.userService.getReviewsByBook(bookId);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get('reviews/user')
+  async getReviewsByUser(@Query('userId') userId: string) {
+    return this.userService.getReviewsByUser(userId);
+  }
 }

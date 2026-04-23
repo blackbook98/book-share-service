@@ -7,6 +7,7 @@ import {
   OneToMany,
 } from 'typeorm';
 import { List } from './lists.entity';
+import { Review } from './review.entity';
 
 @Entity('books')
 export class Book {
@@ -27,6 +28,9 @@ export class Book {
 
   @OneToMany(() => List, (list) => list.book)
   lists: List[];
+
+  @OneToMany(() => Review, (review) => review.book)
+  reviews: Review[];
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

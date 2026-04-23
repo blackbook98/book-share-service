@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { User } from '../database/models/user.entity';
 import { List } from '../database/models/lists.entity';
 import { Book } from '../database/models/book.entity';
+import { Review } from '../database/models/review.entity';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -15,6 +16,8 @@ export class UserService {
     private readonly listRepository: Repository<List>,
     @InjectRepository(Book)
     private readonly bookRepository: Repository<Book>,
+    @InjectRepository(Review)
+    private readonly reviewRepository: Repository<Review>,
   ) {}
 
   async findUser(data: Partial<User>): Promise<any> {
@@ -89,6 +92,58 @@ export class UserService {
       });
     } catch (error) {
       console.error('Error in fetching lists', error);
+      return 'error';
+    }
+  }
+
+  async saveReview(data: {
+    userId: string;
+    bookId: string;
+    rating: number;
+    content?: string;
+  }): Promise<any> {
+    try {
+      const book = await this.bookRepository.findOne({
+        where: { book_id: data.bookId },
+      });
+
+      if (!book) return 'error';
+
+      return await this.reviewRepository.upsert(
+        {
+          userId: data.userId,
+          bookId: book.id,
+          rating: data.rating,
+          content: data.content,
+        },
+        ['userId', 'bookId'],
+      );
+    } catch (error) {
+      console.error('Error in saving review', error);
+      return 'error';
+    }
+  }
+
+  async getReviewsByBook(bookId: string): Promise<any> {
+    try {
+      return await this.reviewRepository.find({
+        where: { bookId },
+        relations: ['user'],
+      });
+    } catch (error) {
+      console.error('Error in fetching reviews', error);
+      return 'error';
+    }
+  }
+
+  async getReviewsByUser(userId: string): Promise<any> {
+    try {
+      return await this.reviewRepository.find({
+        where: { userId },
+        relations: ['book'],
+      });
+    } catch (error) {
+      console.error('Error in fetching reviews', error);
       return 'error';
     }
   }
