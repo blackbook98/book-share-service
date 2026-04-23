@@ -1,12 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigService, ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from './models/user.entity';
-import { List } from './models/lists.entity';
-import { Book } from './models/book.entity';
-import { Review } from './models/review.entity';
-
-const entities = [User, List, Book, Review];
+import { entities } from './modelExports';
 
 @Module({
   imports: [
