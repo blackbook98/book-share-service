@@ -1,4 +1,4 @@
-import { Controller, UseGuards, Post, Body } from '@nestjs/common';
+import { Controller, UseGuards, Post, Get, Body, Query } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { UserService } from './user.service';
 
@@ -10,5 +10,11 @@ export class UserController {
   @Post('saveLists')
   async saveLists(@Body() body: any) {
     await this.userService.saveLists(body);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get('lists')
+  async getLists(@Query('userId') userId: string) {
+    return this.userService.getLists(userId);
   }
 }

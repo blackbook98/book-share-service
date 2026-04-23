@@ -64,4 +64,15 @@ export class UserService {
       return 'error';
     }
   }
+
+  async getLists(UserId: any): Promise<any> {
+    try {
+      return await this.listRepository.find({
+        where: { user_id: UserId },
+      });
+    } catch (error) {
+      console.error('Error in fetching lists', error);
+      return 'error';
+    }
+  }
 }
