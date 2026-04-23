@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../database/models/user.entity';
 import { List } from '../database/models/lists.entity';
+import { Book } from '../database/models/book.entity';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -12,6 +13,8 @@ export class UserService {
     private readonly userRepository: Repository<User>,
     @InjectRepository(List)
     private readonly listRepository: Repository<List>,
+    @InjectRepository(Book)
+    private readonly bookRepository: Repository<Book>,
   ) {}
 
   async findUser(data: Partial<User>): Promise<any> {
@@ -50,15 +53,28 @@ export class UserService {
 
   async saveLists(data: any): Promise<any> {
     try {
-      const list = {
-        name: data?.book?.volumeInfo?.title,
-        book_id: data?.book?.id,
-        volume_info: data?.book?.volumeInfo,
-        description: data?.book?.volumeInfo?.description,
-        list: data?.listName,
-        user_id: data?.user_id,
-      };
-      return await this.listRepository.upsert(list, ['book_id']);
+      await this.bookRepository.upsert(
+        {
+          book_id: data?.book?.id,
+          name: data?.book?.volumeInfo?.title,
+          volume_info: data?.book?.volumeInfo,
+          description: data?.book?.volumeInfo?.description,
+        },
+        ['book_id'],
+      );
+
+      const book = await this.bookRepository.findOne({
+        where: { book_id: data?.book?.id },
+      });
+
+      return await this.listRepository.upsert(
+        {
+          book_id: book?.id,
+          list: data?.listName,
+          user_id: data?.user_id,
+        },
+        ['book_id', 'user_id'],
+      );
     } catch (error) {
       console.error('Error in upserting list', error);
       return 'error';
@@ -69,6 +85,7 @@ export class UserService {
     try {
       return await this.listRepository.find({
         where: { user_id: UserId },
+        relations: ['book'],
       });
     } catch (error) {
       console.error('Error in fetching lists', error);

@@ -4,8 +4,13 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
+  Unique,
 } from 'typeorm';
+import { Book } from './book.entity';
 
+@Unique(['book_id', 'user_id'])
 @Entity('lists')
 export class List {
   @PrimaryGeneratedColumn('uuid')
@@ -15,19 +20,14 @@ export class List {
   user_id: string;
 
   @Column()
-  name: string;
+  list: string;
 
-  @Column({ unique: true })
+  @Column()
   book_id: string;
 
-  @Column({ type: 'json' })
-  volume_info: any;
-
-  @Column()
-  description: string;
-
-  @Column()
-  list: string;
+  @ManyToOne(() => Book, (book) => book.lists)
+  @JoinColumn({ name: 'book_id', referencedColumnName: 'id' })
+  book: Book;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
