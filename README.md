@@ -1,89 +1,282 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Worthy Papercuts 📚
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+A full-stack book tracking and discovery platform with AI-powered recommendations and an intelligent conversational assistant. Users can search for books, manage reading lists, and rate and review titles. Built as a portfolio project to showcase microservice architecture, machine learning integration, and modern AI agent development.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
+---
 
-## Description
+## Live Demo
 
-Backend Service for Book Sharing App.
+> _Link to deployed app here_
 
-## Project setup
+---
 
-```bash
-$ pnpm install
+## Table of Contents
+
+- [Overview](#overview)
+- [Features](#features)
+- [Architecture](#architecture)
+- [Tech Stack](#tech-stack)
+- [API Documentation](#api-documentation)
+- [Project Structure](#project-structure)
+- [Planned Features](#planned-features)
+- [Author](#author)
+
+---
+
+## Overview
+
+The interesting part of this project is not just the features — it's the deliberate engineering decisions behind them.
+
+Rather than building a monolith, the system is split into three independently deployable services: a NestJS API, a Python ML microservice, and a React frontend. Recommendations are decoupled from the request cycle entirely — pre-computed on a schedule and served instantly from the database. The AI chatbot is implemented as a proper tool-calling agent rather than a simple prompt wrapper, giving it the ability to take real actions on a user's behalf.
+
+The stack was chosen to reflect real-world trade-offs:
+
+- **NestJS + TypeScript** for a structured, scalable backend with clear module boundaries
+- **React** for a lightweight frontend that calls Google Books API directly, keeping book search out of the backend
+- **Python + scikit-learn** for the ML layer — keeping data science concerns out of the Node service
+- **Google ADK + Gemini** for an agent that reasons over tools rather than just generating text
+- **PostgreSQL on Neon.tech** for a serverless-friendly managed database
+
+---
+
+## Features
+
+### Core
+
+- 🔐 JWT authentication — register, login, logout
+- 📚 Search for books via Google Books API
+- 📋 Save books to lists — **To Read**, **Currently Reading**, **Finished**
+- 🔄 Move books between lists
+- ⭐ Rate and review finished books
+- 🔍 Search and filter within your own lists
+- 👥 View other users' ratings and reviews on book detail pages
+
+### AI Features
+
+- 🤖 **AI Book Recommendations** — personalized suggestions powered by a Python ML microservice using content-based filtering (TF-IDF + cosine similarity). Recommendations are pre-computed on a schedule and pulled from Google Books API based on your taste profile
+- 💬 **AI Chatbot Agent** — powered by Google ADK and Gemini. Can search for books, add them to your lists, fetch your recommendations, and discuss literary topics conversationally
+
+---
+
+## Architecture
+
+```
+                    ┌─────────────────────┐
+                    │   Google Books API  │◄──────────────────────┐
+                    └──────────┬──────────┘                       │
+                               │ book search (direct)             │ recommendation
+                               ▼                                  │ candidates
+┌──────────────────────────────────────────────────────────┐      │
+│                       React Frontend                     │      │
+│    Dashboard │ Explore │ ChatBot │ LoginRegister         │      │
+└────────────────────────────┬─────────────────────────────┘      │
+                             │ HTTP / REST + JWT                  │
+┌────────────────────────────▼─────────────────────────────┐      │
+│                      NestJS Backend                      │      │
+│     Auth │ Lists │ Reviews │ Recommender │ Chatbot Agent │──────┘
+└──────┬────────────────────────────────────────┬──────────┘
+       │ HTTP (cron-triggered)                  │ TypeORM
+       │                               ┌────────▼────────┐
+┌──────▼──────────────┐                │   PostgreSQL DB │
+│  Python Recommender │                │   (Neon.tech)   │
+│   ML Microservice   │                └─────────────────┘
+│   (scikit-learn /   │
+│   TF-IDF + cosine)  │
+└─────────────────────┘
 ```
 
-## Compile and run the project
+### Request Flow — Recommendations
 
-```bash
-# development without docker
-$ pnpm run build
-$ pnpm run start
-
-# watch mode
-$ pnpm run start:dev
-
-# development with docker
-$ docker build -t book-share-service .
-$ docker run --env-file .env -d -p 3000:3000 --name book-share-service-container book-share-service
-
-# production mode
-$ pnpm run start:prod
+```
+Scheduled job (every 12 hours)
+        │
+        ▼
+NestJS fetches user's finished books + ratings from DB
+        │
+        ▼
+POST to Python /recommend
+        │
+        ▼
+Python extracts taste profile (top genres, authors, keywords)
+Builds search queries → hits Google Books API
+Scores candidates via cosine similarity
+        │
+        ▼
+Returns top 10 books → NestJS saves to recommendations table
+        │
+        ▼
+User hits GET /recommendations → instant response from DB ⚡
 ```
 
-## Run tests
+### Request Flow — AI Chatbot
 
-```bash
-# unit tests
-$ pnpm run test
-
-# e2e tests
-$ pnpm run test:e2e
-
-# test coverage
-$ pnpm run test:cov
+```
+User: "Add Dune to my reading list"
+        │
+        ▼
+POST /chatbot/message → NestJS ChatbotService
+        │
+        ▼
+Google ADK Agent (Gemini 2.5 Flash)
+  → calls search_books tool (Google Books API)
+  → confirms book with user
+  → calls add_book_to_list tool (directly hits ListsService)
+        │
+        ▼
+"Done! I've added Dune by Frank Herbert to your To Read list."
 ```
 
-## Deployment
+---
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+## Tech Stack
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+### [Backend](https://github.com/blackbook98/book-share-service)
 
-```bash
-$ pnpm install -g @nestjs/mau
-$ mau deploy
+| Technology                 | Purpose                                      |
+| -------------------------- | -------------------------------------------- |
+| NestJS + TypeScript        | REST API, business logic, agent              |
+| TypeORM                    | ORM for PostgreSQL                           |
+| PostgreSQL (Neon.tech)     | Primary database                             |
+| JWT + Passport.js          | Authentication                               |
+| Google ADK (`@google/adk`) | AI agent framework                           |
+| Gemini 2.5 Flash           | LLM powering the chatbot                     |
+| `@nestjs/schedule`         | Cron jobs for recommendation pre-computation |
+
+### [Python ML Service](https://github.com/blackbook98/worthy-papercuts-recommender)
+
+| Technology    | Purpose                                  |
+| ------------- | ---------------------------------------- |
+| FastAPI       | Lightweight API framework                |
+| scikit-learn  | TF-IDF vectorization + cosine similarity |
+| httpx         | Async Google Books API calls             |
+| python-dotenv | Environment variable management          |
+
+### [Frontend](https://github.com/blackbook98/worthy-papercuts)
+
+| Technology       | Purpose                                     |
+| ---------------- | ------------------------------------------- |
+| React            | Frontend framework                          |
+| Google Books API | Book search (called directly from frontend) |
+
+### Infrastructure
+
+| Technology            | Purpose                          |
+| --------------------- | -------------------------------- |
+| Google Cloud Run      | Serverless container hosting     |
+| Docker                | Containerization                 |
+| GCP Artifact Registry | Container image storage          |
+| Cloud Scheduler       | Triggers recommendation cron job |
+
+---
+
+## API Documentation
+
+The NestJS backend exposes the following endpoints. All endpoints except auth require a valid JWT in the `Authorization: Bearer <token>` header.
+
+### Auth
+
+| Method | Endpoint         | Description           |
+| ------ | ---------------- | --------------------- |
+| POST   | `/auth/register` | Register a new user   |
+| POST   | `/auth/login`    | Login and receive JWT |
+
+### Lists
+
+| Method | Endpoint     | Description              |
+| ------ | ------------ | ------------------------ |
+| GET    | `/lists`     | Get user's reading lists |
+| POST   | `/saveLists` | Add a book to a list     |
+| DELETE | `/lists`     | Remove book from lists   |
+
+### Reviews
+
+| Method | Endpoint           | Description                |
+| ------ | ------------------ | -------------------------- |
+| POST   | `/reviews`         | Create a review            |
+| GET    | `/reviews/:bookId` | Get all reviews for a book |
+| GET    | `/reviews/user`    | Get reviews by a user      |
+
+### Recommendations
+
+| Method | Endpoint               | Description                        |
+| ------ | ---------------------- | ---------------------------------- |
+| GET    | `/recommender/:userId` | Get personalized recommendations   |
+| POST   | `/recommender`         | Trigger recommendation computation |
+
+### Chatbot
+
+| Method | Endpoint           | Description                    |
+| ------ | ------------------ | ------------------------------ |
+| POST   | `/chatbot/message` | Send a message to the AI agent |
+
+### Python Recommender (internal)
+
+| Method | Endpoint     | Description                        |
+| ------ | ------------ | ---------------------------------- |
+| POST   | `/recommend` | Compute recommendations for a user |
+| GET    | `/health`    | Health check                       |
+
+---
+
+## Project Structure
+
+Each service lives in its own repository. Click the section headers to visit each repo.
+
+### [Backend](https://github.com/blackbook98/book-share-service)
+
+```
+src/
+├── auth/                 # JWT auth, guards, strategies
+├── user/                 # User entity and service
+├── recommender/          # Cron job, recommendation storage
+├── chatbot/              # ADK agent, tools for agent
+│   └── tools/
+│       ├── books.tool.ts
+│       └── lists.tool.ts
+└── database/
+    └── models/           # TypeORM entities
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+### [Frontend](https://github.com/blackbook98/worthy-papercuts)
 
-## Resources
+```
+src/
+├── Components/
+│   ├── About.js
+│   ├── ChatBot.js
+│   ├── Dashboard.js
+│   ├── Explore.js
+│   ├── LoginRegister.js
+│   ├── Logout.js
+│   └── ReviewModal.js
+├── helpers/
+│   └── helper_axios.js
+├── App.js
+└── index.js
+```
 
-Check out a few resources that may come in handy when working with NestJS:
+### [Python Recommender](https://github.com/blackbook98/worthy-papercuts-recommender)
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+```
+├── main.py               # FastAPI app
+├── recommender.py        # TF-IDF + cosine similarity logic
+└── requirements.txt
+```
 
-## Support
+---
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+## Planned Features for next Iteration
 
-## Stay in touch
+- **Collaborative filtering** — cross-user recommendations once the platform has sufficient rating data
+- **User profile page** — reading stats, favourite genres, reviews written
+- **Book exchange system** — match users within 10km who want to exchange books, using PostGIS geospatial queries
+- **Reading pace tracker** — log reading sessions and predict finish dates
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+---
 
-## License
+## Author
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+Built by **Oindrila Chakraborti**
+
+- GitHub: [blackbook98](https://github.com/blackbook98)
+- LinkedIn: [oindrila-chakraborti](https://www.linkedin.com/in/oindrila-chakraborti)
