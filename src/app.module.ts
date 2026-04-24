@@ -5,6 +5,7 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/exports';
 import { DatabaseModule } from './database/database.module';
 import { RecommenderModule } from './recommender/recommender.module';
+import { ChatbotModule } from './chatbot/chatbot.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { RecommenderModule } from './recommender/recommender.module';
     DatabaseModule,
     AuthModule,
     RecommenderModule,
+    ChatbotModule,
   ],
   controllers: [AppController],
   providers: [AppService],
