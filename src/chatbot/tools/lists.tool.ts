@@ -2,7 +2,7 @@ import { FunctionTool } from '@google/adk';
 import { z } from 'zod';
 import { UserService } from '../../user/user.service';
 
-const listNameSchema = z.enum(['TO_READ', 'READING', 'FINISHED']);
+const listNameSchema = z.enum(['toRead', 'reading', 'finished']);
 
 export const createListsTools = (userId: string, userService: UserService) => {
   const addToListTool = new FunctionTool({
@@ -20,7 +20,10 @@ export const createListsTools = (userId: string, userService: UserService) => {
     execute: async ({ googleBooksId, title, listName, volumeInfo }) => {
       try {
         await userService.saveLists({
-          book: { id: googleBooksId, volumeInfo: { title, ...(volumeInfo || {}) } },
+          book: {
+            id: googleBooksId,
+            volumeInfo: { title, ...(volumeInfo || {}) },
+          },
           listName,
           user_id: userId,
         });
@@ -44,7 +47,9 @@ export const createListsTools = (userId: string, userService: UserService) => {
     }),
     execute: async ({ listName }) => {
       const lists = await userService.getLists(userId);
-      const filtered = listName ? lists.filter((l) => l.list === listName) : lists;
+      const filtered = listName
+        ? lists.filter((l) => l.list === listName)
+        : lists;
       return { lists: filtered };
     },
   });
@@ -53,9 +58,7 @@ export const createListsTools = (userId: string, userService: UserService) => {
     name: 'move_book',
     description: 'Move a book from one list to another',
     parameters: z.object({
-      googleBooksId: z
-        .string()
-        .describe('Google Books ID of the book to move'),
+      googleBooksId: z.string().describe('Google Books ID of the book to move'),
       newList: listNameSchema.describe('The list to move the book to'),
     }),
     execute: async ({ googleBooksId, newList }) => {

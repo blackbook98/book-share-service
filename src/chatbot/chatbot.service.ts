@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import {
   LlmAgent,
   Runner,
@@ -9,9 +8,7 @@ import {
 import { Content } from '@google/genai';
 import { searchBooksTool } from './tools/books.tool';
 import { createListsTools } from './tools/lists.tool';
-import { createRecommendationsTool } from './tools/recommendation.tool';
 import { UserService } from '../user/user.service';
-import { RecommenderService } from '../recommender/recommender.service';
 
 const APP_NAME = 'bookmind';
 
@@ -20,18 +17,10 @@ export class ChatbotService {
   private sessionService = new InMemorySessionService();
   private runner: Runner;
 
-  constructor(
-    private configService: ConfigService,
-    private userService: UserService,
-    private recommenderService: RecommenderService,
-  ) {}
+  constructor(private userService: UserService) {}
 
   private createAgent(userId: string): LlmAgent {
     const listsTools = createListsTools(userId, this.userService);
-    const recommendationsTool = createRecommendationsTool(
-      userId,
-      this.recommenderService,
-    );
 
     return new LlmAgent({
       name: 'bookmind_agent',
@@ -42,7 +31,6 @@ export class ChatbotService {
         You are BookMind, a helpful book assistant. You help users:
         - Search for and discover new books
         - Manage their reading lists (To Read, Currently Reading, Finished)
-        - Get personalized book recommendations
         - Discuss books, authors, themes, and literary topics
 
         When a user wants to add a book:
@@ -56,7 +44,7 @@ export class ChatbotService {
         Keep responses friendly and concise.
         If asked about something unrelated to books, politely redirect.
       `,
-      tools: [searchBooksTool, ...listsTools, recommendationsTool],
+      tools: [searchBooksTool, ...listsTools],
     });
   }
 
@@ -100,7 +88,9 @@ export class ChatbotService {
       newMessage,
     })) {
       if (event.errorCode) {
-        throw new Error(event.errorMessage || `Agent error: ${event.errorCode}`);
+        throw new Error(
+          event.errorMessage || `Agent error: ${event.errorCode}`,
+        );
       }
       if (isFinalResponse(event)) {
         const text = event.content?.parts?.[0]?.text;
