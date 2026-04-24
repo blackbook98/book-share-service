@@ -4,6 +4,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/exports';
 import { DatabaseModule } from './database/database.module';
+import { RecommenderModule } from './recommender/recommender.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { DatabaseModule } from './database/database.module';
     }),
     DatabaseModule,
     AuthModule,
+    RecommenderModule,
   ],
   controllers: [AppController],
   providers: [AppService],
