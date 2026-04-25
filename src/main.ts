@@ -4,11 +4,14 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { abortOnError: false });
   app.enableCors({
-    origin: 'http://localhost:4000',
+    origin: [
+      'http://localhost:4000',
+      process.env.FRONTEND_URL, // your Vercel URL later
+    ].filter(Boolean),
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     allowedHeaders: 'Content-Type,Authorization',
     credentials: true,
   });
-  await app.listen(process.env.PORT ?? 3000);
+  await app.listen(process.env.PORT ?? 8080);
 }
 bootstrap();
