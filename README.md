@@ -88,7 +88,7 @@ The stack was chosen to reflect real-world trade-offs:
 ### Request Flow — Recommendations
 
 ```
-Scheduled job (every 12 hours)
+Scheduled job
         │
         ▼
 Backend (NestJS) fetches user's finished books + ratings from DB
@@ -189,11 +189,11 @@ The NestJS backend exposes the following endpoints. All endpoints except auth re
 
 ### Lists
 
-| Method | Endpoint              | Description                          |
-| ------ | --------------------- | ------------------------------------ |
-| GET    | `/lists?userId=<id>`  | Get user's reading lists             |
-| POST   | `/saveLists`          | Add or move a book in a list         |
-| DELETE | `/lists`              | Remove a book from a user's lists    |
+| Method | Endpoint             | Description                       |
+| ------ | -------------------- | --------------------------------- |
+| GET    | `/lists?userId=<id>` | Get user's reading lists          |
+| POST   | `/saveLists`         | Add or move a book in a list      |
+| DELETE | `/lists`             | Remove a book from a user's lists |
 
 ### Reviews
 
