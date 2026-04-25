@@ -1,4 +1,4 @@
-import { Controller, UseGuards, Post, Get, Param } from '@nestjs/common';
+import { Controller, UseGuards, Post, Get, Param, Request, ForbiddenException } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { RecommenderService } from './recommender.service';
 
@@ -8,7 +8,10 @@ export class RecommenderController {
 
   @UseGuards(AuthGuard('jwt'))
   @Post('')
-  async getRecommendations() {
+  async getRecommendations(@Request() req) {
+    if (req.user.username !== 'admin') {
+      throw new ForbiddenException('Admin access required');
+    }
     console.log('Computing recommendations for all eligible users...');
     return this.recommendationService.computeAllRecommendations();
   }
