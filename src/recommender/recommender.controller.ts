@@ -1,4 +1,12 @@
-import { Controller, UseGuards, Post, Get, Param, Request, ForbiddenException } from '@nestjs/common';
+import {
+  Controller,
+  UseGuards,
+  Post,
+  Get,
+  Param,
+  Request,
+  ForbiddenException,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { RecommenderService } from './recommender.service';
 

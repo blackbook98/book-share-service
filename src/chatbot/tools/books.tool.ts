@@ -17,14 +17,11 @@ export const searchBooksTool = new FunctionTool({
     const response = await fetch(url);
     const data = await response.json();
 
-    const books = (data.items || []).map((item) => ({
+    const books = (data.items || []).map((item: any) => ({
       googleBooksId: item.id,
       title: item.volumeInfo?.title,
-      authors: item.volumeInfo?.authors || [],
-      categories: item.volumeInfo?.categories || [],
-      description: (item.volumeInfo?.description || '').slice(0, 200),
-      coverImage: item.volumeInfo?.imageLinks?.thumbnail,
-      averageRating: item.volumeInfo?.averageRating,
+      description: item.volumeInfo?.description || '',
+      volume_info: item.volumeInfo,
     }));
 
     return { books };

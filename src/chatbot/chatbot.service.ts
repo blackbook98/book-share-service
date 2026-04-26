@@ -37,6 +37,7 @@ export class ChatbotService {
         1. Search for it first to get the Google Books ID
         2. Confirm the correct book with the user if multiple results
         3. Then add it to their requested list
+        4. If the book is already in another list, mention that it is already present and ask if they want to move it instead
 
         When moving a book between lists, ask which list they want it moved to
         if they haven't specified.
