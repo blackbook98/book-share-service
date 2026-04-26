@@ -46,6 +46,9 @@ export class ChatbotService {
         If asked about something unrelated to books, politely redirect.
       `,
       tools: [searchBooksTool, ...listsTools],
+      generateContentConfig: {
+        maxOutputTokens: 1024,
+      },
     });
   }
 

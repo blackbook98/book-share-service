@@ -13,9 +13,24 @@ export const createListsTools = (userId: string, userService: UserService) => {
       title: z.string().describe('Title of the book'),
       listName: listNameSchema.describe('Which list to add the book to'),
       volumeInfo: z
-        .record(z.string(), z.unknown())
+        .object({
+          title: z.string().optional(),
+          subtitle: z.string().optional(),
+          authors: z.array(z.string()).optional(),
+          description: z.string().optional(),
+          categories: z.array(z.string()).optional(),
+          imageLinks: z
+            .object({
+              thumbnail: z.string().optional(),
+              smallThumbnail: z.string().optional(),
+            })
+            .optional(),
+          publishedDate: z.string().optional(),
+          pageCount: z.number().optional(),
+          language: z.string().optional(),
+        })
         .describe(
-          'volume_info from Google Books. Should contain title, description, authors, category, imageLinks, thumbnails, etc. whatever comes in the volume_info/volumeInfo field from the Google API search results.',
+          'Book metadata from Google Books volumeInfo — include title, authors, description, categories, imageLinks, publishedDate.',
         ),
     }),
     execute: async ({ googleBooksId, title, listName, volumeInfo }) => {
